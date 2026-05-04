@@ -1,0 +1,66 @@
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const db = require('../config');
+
+const router = express.Router();
+const SECRET_KEY = 'mi_clave_secreta';
+
+// Registro de usuario
+router.post('/register', (req, res) => {
+  const { nombre, email, password } = req.body;
+
+  if (!nombre || !email || !password) {
+    return res.status(400).json({ success: false, message: 'Todos los campos son obligatorios' });
+  }
+
+  // Verificar si el email ya existe
+  db.get('SELECT id FROM usuarios WHERE email = ?', [email], (err, row) => {
+    if (err) return res.status(500).json({ success: false, message: 'Error en el servidor' });
+    if (row) return res.status(400).json({ success: false, message: 'El email ya está registrado' });
+
+    // Hash de la contraseña
+    const hashedPassword = bcrypt.hashSync(password, 10);
+
+    // Insertar usuario
+    db.run(
+      'INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?)',
+      [nombre, email, hashedPassword],
+      function(err) {
+        if (err) return res.status(500).json({ success: false, message: 'Error al registrar usuario' });
+        res.json({ success: true, message: 'Usuario registrado exitosamente' });
+      }
+    );
+  });
+});
+
+// Login de usuario
+router.post('/login', (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ success: false, message: 'Email y contraseña requeridos' });
+  }
+
+  db.get('SELECT * FROM usuarios WHERE email = ?', [email], (err, user) => {
+    if (err) return res.status(500).json({ success: false, message: 'Error en el servidor' });
+    if (!user) return res.status(400).json({ success: false, message: 'Credenciales incorrectas' });
+
+    const validPassword = bcrypt.compareSync(password, user.password);
+    if (!validPassword) return res.status(400).json({ success: false, message: 'Credenciales incorrectas' });
+
+    const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: '1h' });
+
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        nombre: user.nombre,
+        email: user.email
+      },
+      token
+    });
+  });
+});
+
+module.exports = router;
