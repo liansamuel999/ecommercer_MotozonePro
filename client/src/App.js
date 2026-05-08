@@ -7,6 +7,7 @@ import Carrito from './components/Carrito';
 import Login from './components/Login';
 import Contacto from './components/Contacto';
 import Registro from './components/Registro';
+import MotosEnVivo from './components/MotosEnVivo';
 
 function App() {
 // Estados principales de la aplicación
@@ -136,6 +137,7 @@ const agregarAlCarrito = (producto) => {
         {paginaActual === 'login' && <Login iniciarSesion={iniciarSesion} navegar={navegar} />}
         {paginaActual === 'registro' && <Registro navegar={navegar} />}
         {paginaActual === 'contacto' && <Contacto navegar={navegar} />}
+        {paginaActual === 'motos-en-vivo' && <MotosEnVivo />}
       </main>
       <Footer navegar={navegar} />
     </div>

@@ -29,7 +29,8 @@ function Contacto({ navegar }) {
         <form onSubmit={handleSubmit}>
           <input type="text" placeholder="Nombre" required value={formData.nombre} onChange={(e) => setFormData({...formData, nombre: e.target.value})} style={{width: '100%', padding: '12px', marginBottom: '15px', border: '2px solid #e2e8f0', borderRadius: '8px', fontSize: '15px', boxSizing: 'border-box'}} />
           <input type="email" placeholder="Email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} style={{width: '100%', padding: '12px', marginBottom: '15px', border: '2px solid #e2e8f0', borderRadius: '8px', fontSize: '15px', boxSizing: 'border-box'}} />
-          <textarea placeholder="Mensaje" required value={formData.mensaje} onChange={(e) => setFormData({...formData, mensaje: e.target.value})} style={{width: '100%', padding: '12px', marginBottom: '15px', border: '2px solid #e2e8f0', borderRadius: '8px', fontSize: '15px', minHeight: '120px', resize: 'vertical', boxSizing: 'border-box'}}></textarea>
+          <textarea placeholder="Mensaje" required value={formData.mensaje} onChange={(e) => setFormData({...formData, mensaje: e.target.value})} maxLength="500" style={{width: '100%', padding: '12px', marginBottom: '15px', border: '2px solid #e2e8f0', borderRadius: '8px', fontSize: '15px', minHeight: '120px', resize: 'vertical', boxSizing: 'border-box'}}></textarea>
+          <p style={{fontSize: '12px', color: formData.mensaje.length > 450 ? 'red' : '#666', textAlign: 'right', marginBottom: '15px'}}>Caracteres: {formData.mensaje.length}/500</p>
           <button type="submit" style={{width: '100%', padding: '15px', backgroundColor: '#ff6b00', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: '16px'}}>📤 Enviar Mensaje</button>
         </form>
       </div>
