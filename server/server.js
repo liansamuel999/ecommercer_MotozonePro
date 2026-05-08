@@ -15,9 +15,17 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/productos', require('./routes/productos'));
 app.use('/api/categorias', require('./routes/categorias'));
 app.use('/api/modelos', require('./routes/modelos'));
+// Servir archivos estáticos del cliente React
+app.use(express.static(path.join(__dirname, '../client/build')));
+
+// Para rutas no encontradas, servir index.html (necesario para React Router)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/build/index.html'));
+});
 
 // Iniciar servidor
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
+
 
