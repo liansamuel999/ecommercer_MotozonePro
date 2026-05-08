@@ -1,1 +1,2 @@
-run = "cd server && npm install && npm run seed && npm start"
+run = "cd server && npm install && npm run build && npm run seed && npm start"
+modules = ["nodejs-20"]

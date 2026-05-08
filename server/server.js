@@ -19,7 +19,7 @@ app.use('/api/modelos', require('./routes/modelos'));
 app.use(express.static(path.join(__dirname, '../client/build')));
 
 // Para rutas no encontradas, servir index.html (necesario para React Router)
-app.get('*', (req, res) => {
+app.get(/.*/, (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build/index.html'));
 });
 
@@ -27,5 +27,3 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
-
-
