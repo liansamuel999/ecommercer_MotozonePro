@@ -72,39 +72,3 @@ router.post('/login', (req, res) => {
 });
 
 module.exports = router;
-        res.json({ success: true, message: 'Usuario registrado exitosamente' });
-      }
-    );
-  });
-});
-
-// Login de usuario
-router.post('/login', (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ success: false, message: 'Email y contraseña requeridos' });
-  }
-
-  db.get('SELECT * FROM usuarios WHERE email = ?', [email], (err, user) => {
-    if (err) return res.status(500).json({ success: false, message: 'Error en el servidor' });
-    if (!user) return res.status(400).json({ success: false, message: 'Credenciales incorrectas' });
-
-    const validPassword = bcrypt.compareSync(password, user.password);
-    if (!validPassword) return res.status(400).json({ success: false, message: 'Credenciales incorrectas' });
-
-    const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: '1h' });
-
-    res.json({
-      success: true,
-      user: {
-        id: user.id,
-        nombre: user.nombre,
-        email: user.email
-      },
-      token
-    });
-  });
-});
-
-module.exports = router;
