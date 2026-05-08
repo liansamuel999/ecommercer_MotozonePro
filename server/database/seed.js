@@ -10,7 +10,7 @@ db.pragma('journal_mode = WAL');
 db.exec(`
   CREATE TABLE IF NOT EXISTS categorias (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT NOT NULL,
+    nombre TEXT NOT NULL UNIQUE,
     descripcion TEXT
   );
 
@@ -53,6 +53,14 @@ db.exec(`
   );
 `);
 
+// Si ya hay datos, no volver a insertar (evita duplicados en cada arranque)
+const existentes = db.prepare('SELECT COUNT(*) as total FROM categorias').get();
+if (existentes.total > 0) {
+  console.log('✅ Base de datos ya tiene datos, omitiendo seed.');
+  db.close();
+  process.exit(0);
+}
+
 // Insertar categorías
 const categorias = [
   { nombre: 'Transmisión', descripcion: 'Kits de arrastre, cadenas, piñones' },
@@ -82,10 +90,7 @@ const productos = [
     "precio": 45000,
     "categoria": "Mantenimiento",
     "imagen": "imagenes/aceite-10w40-universal.jpg",
-    "especificaciones": {
-      "viscosidad": "10W40",
-      "especificacion": "JASO MA2"
-    },
+    "especificaciones": { "viscosidad": "10W40", "especificacion": "JASO MA2" },
     "modelosCompatibles": ["Universal"]
   },
   {
@@ -93,10 +98,7 @@ const productos = [
     "precio": 48000,
     "categoria": "Mantenimiento",
     "imagen": "imagenes/aceite-20w50-universal.jpg",
-    "especificaciones": {
-      "viscosidad": "20W50",
-      "especificacion": "JASO MA"
-    },
+    "especificaciones": { "viscosidad": "20W50", "especificacion": "JASO MA" },
     "modelosCompatibles": ["Universal"]
   },
   {
@@ -104,10 +106,7 @@ const productos = [
     "precio": 65000,
     "categoria": "Mantenimiento",
     "imagen": "imagenes/yamaha-r3-filtro-aire.jpg",
-    "especificaciones": {
-      "tipo": "Filtro de papel",
-      "uso": "OEM"
-    },
+    "especificaciones": { "tipo": "Filtro de papel", "uso": "OEM" },
     "modelosCompatibles": ["Yamaha R3"]
   },
   {
@@ -115,10 +114,7 @@ const productos = [
     "precio": 35000,
     "categoria": "Mantenimiento",
     "imagen": "imagenes/bujia-ngk-cr8e-universal.jpg",
-    "especificaciones": {
-      "tipo": "Iridio",
-      "rosca": "M10"
-    },
+    "especificaciones": { "tipo": "Iridio", "rosca": "M10" },
     "modelosCompatibles": ["Universal"]
   },
   {
@@ -126,11 +122,7 @@ const productos = [
     "precio": 185000,
     "categoria": "Transmisión",
     "imagen": "imagenes/yamaha-mt07-kit-arrastre.jpg",
-    "especificaciones": {
-      "material": "Acero templado",
-      "relacion": "15/42",
-      "tipo": "Kit completo"
-    },
+    "especificaciones": { "material": "Acero templado", "relacion": "15/42", "tipo": "Kit completo" },
     "modelosCompatibles": ["Yamaha MT-07"]
   },
   {
@@ -138,10 +130,7 @@ const productos = [
     "precio": 175000,
     "categoria": "Transmisión",
     "imagen": "imagenes/honda-cb125f-kit-arrastre.jpg",
-    "especificaciones": {
-      "material": "Acero",
-      "relacion": "14/44"
-    },
+    "especificaciones": { "material": "Acero", "relacion": "14/44" },
     "modelosCompatibles": ["Honda CB125F"]
   },
   {
@@ -149,10 +138,7 @@ const productos = [
     "precio": 120000,
     "categoria": "Transmisión",
     "imagen": "imagenes/cadena-520-universal.jpg",
-    "especificaciones": {
-      "material": "Acero",
-      "longitud": "120 eslabones"
-    },
+    "especificaciones": { "material": "Acero", "longitud": "120 eslabones" },
     "modelosCompatibles": ["Universal"]
   },
   {
@@ -160,10 +146,7 @@ const productos = [
     "precio": 78000,
     "categoria": "Frenos",
     "imagen": "imagenes/honda-cb190r-pastillas-freno.jpg",
-    "especificaciones": {
-      "material": "Sinterizadas",
-      "tipo": "Delanteras"
-    },
+    "especificaciones": { "material": "Sinterizadas", "tipo": "Delanteras" },
     "modelosCompatibles": ["Honda CB190R"]
   },
   {
@@ -171,10 +154,7 @@ const productos = [
     "precio": 125000,
     "categoria": "Frenos",
     "imagen": "imagenes/yamaha-mt07-pastillas-freno.jpg",
-    "especificaciones": {
-      "material": "Sinterizadas",
-      "tipo": "Delanteras"
-    },
+    "especificaciones": { "material": "Sinterizadas", "tipo": "Delanteras" },
     "modelosCompatibles": ["Yamaha MT-07"]
   },
   {
@@ -182,10 +162,7 @@ const productos = [
     "precio": 135000,
     "categoria": "Frenos",
     "imagen": "imagenes/honda-cb125f-disco-freno.jpg",
-    "especificaciones": {
-      "material": "Acero inoxidable",
-      "diametro": "240mm"
-    },
+    "especificaciones": { "material": "Acero inoxidable", "diametro": "240mm" },
     "modelosCompatibles": ["Honda CB125F"]
   },
   {
@@ -193,10 +170,7 @@ const productos = [
     "precio": 210000,
     "categoria": "Eléctrico",
     "imagen": "imagenes/bateria-12v9ah-universal.jpg",
-    "especificaciones": {
-      "tipo": "Libre de mantenimiento",
-      "voltaje": "12V"
-    },
+    "especificaciones": { "tipo": "Libre de mantenimiento", "voltaje": "12V" },
     "modelosCompatibles": ["Universal"]
   },
   {
@@ -204,10 +178,7 @@ const productos = [
     "precio": 95000,
     "categoria": "Eléctrico",
     "imagen": "imagenes/bombillo-led-h4-universal.jpg",
-    "especificaciones": {
-      "tipo": "LED",
-      "voltaje": "12V"
-    },
+    "especificaciones": { "tipo": "LED", "voltaje": "12V" },
     "modelosCompatibles": ["Universal"]
   },
   {
@@ -215,10 +186,7 @@ const productos = [
     "precio": 130000,
     "categoria": "Eléctrico",
     "imagen": "imagenes/bajaj-ns200-regulador.jpg",
-    "especificaciones": {
-      "voltaje": "12V",
-      "tipo": "OEM"
-    },
+    "especificaciones": { "voltaje": "12V", "tipo": "OEM" },
     "modelosCompatibles": ["Bajaj Pulsar NS200"]
   },
   {
@@ -226,10 +194,7 @@ const productos = [
     "precio": 450000,
     "categoria": "Suspensión",
     "imagen": "imagenes/honda-xr190l-amortiguador.jpg",
-    "especificaciones": {
-      "tipo": "Monoshock",
-      "ajuste": "Precarga"
-    },
+    "especificaciones": { "tipo": "Monoshock", "ajuste": "Precarga" },
     "modelosCompatibles": ["Honda XR190L"]
   },
   {
@@ -237,10 +202,7 @@ const productos = [
     "precio": 60000,
     "categoria": "Suspensión",
     "imagen": "imagenes/yamaha-fz25-retenes-horquilla.jpg",
-    "especificaciones": {
-      "diametro": "41mm",
-      "material": "Goma nitrílica"
-    },
+    "especificaciones": { "diametro": "41mm", "material": "Goma nitrílica" },
     "modelosCompatibles": ["Yamaha FZ-25"]
   },
   {
@@ -248,10 +210,7 @@ const productos = [
     "precio": 320000,
     "categoria": "Seguridad",
     "imagen": "imagenes/casco-integral-universal.jpg",
-    "especificaciones": {
-      "certificacion": "DOT",
-      "material": "ABS"
-    },
+    "especificaciones": { "certificacion": "DOT", "material": "ABS" },
     "modelosCompatibles": ["Universal"]
   },
   {
@@ -259,10 +218,7 @@ const productos = [
     "precio": 85000,
     "categoria": "Seguridad",
     "imagen": "imagenes/guantes-proteccion-universal.jpg",
-    "especificaciones": {
-      "material": "Cuero sintético",
-      "proteccion": "Nudillos"
-    },
+    "especificaciones": { "material": "Cuero sintético", "proteccion": "Nudillos" },
     "modelosCompatibles": ["Universal"]
   },
   {
@@ -270,10 +226,7 @@ const productos = [
     "precio": 35000,
     "categoria": "Seguridad",
     "imagen": "imagenes/chaleco-reflectivo-universal.jpg",
-    "especificaciones": {
-      "color": "Amarillo fluorescente",
-      "norma": "NTC 5807"
-    },
+    "especificaciones": { "color": "Amarillo fluorescente", "norma": "NTC 5807" },
     "modelosCompatibles": ["Universal"]
   },
   {
@@ -281,10 +234,7 @@ const productos = [
     "precio": 95000,
     "categoria": "Seguridad",
     "imagen": "imagenes/guantes-touring-universal.jpg",
-    "especificaciones": {
-      "material": "Textil",
-      "proteccion": "Refuerzo palma"
-    },
+    "especificaciones": { "material": "Textil", "proteccion": "Refuerzo palma" },
     "modelosCompatibles": ["Universal"]
   }
 ];
