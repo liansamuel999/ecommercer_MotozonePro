@@ -24,3 +24,11 @@ waitForPort = 5000
 
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["bash", "-c", "cd server && node database/seed.js; node server.js"]
+build = ["bash", "-c", "cd server && npm install && cd ../client && npm install && npm run build"]
+
+[agent]
+expertMode = true
