@@ -10,3 +10,10 @@ db.pragma('journal_mode = WAL');
 console.log('Conectado a SQLite');
 
 module.exports = db;
+    filename: dbPath,
+    driver: require('better-sqlite3')
+  });
+  return db;
+};
+
+module.exports = getDb;
