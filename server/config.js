@@ -1,14 +1,12 @@
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const path = require('path');
 
-// Conexión a SQLite usando sqlite3
+// Conexión a SQLite usando better-sqlite3
 const dbPath = path.join(__dirname, 'database', 'motozone.db');
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('Error al conectar con SQLite:', err.message);
-  } else {
-    console.log('Conectado a SQLite');
-  }
-});
+const db = new Database(dbPath);
+
+db.pragma('journal_mode = WAL');
+
+console.log('Conectado a SQLite');
 
 module.exports = db;

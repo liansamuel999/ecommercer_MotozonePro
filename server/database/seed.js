@@ -1,98 +1,82 @@
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const path = require('path');
 
 const dbPath = path.join(__dirname, 'motozone.db');
-const db = new sqlite3.Database(dbPath);
+const db = new Database(dbPath);
 
-db.serialize(() => {
-  // Crear tablas
-  db.run(`
-    CREATE TABLE IF NOT EXISTS categorias (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      nombre TEXT NOT NULL,
-      descripcion TEXT
-    )
-  `);
+db.pragma('journal_mode = WAL');
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS productos (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      nombre TEXT NOT NULL,
-      precio REAL NOT NULL,
-      categoria_id INTEGER,
-      imagen TEXT,
-      especificaciones TEXT,
-      modelos_compatibles TEXT,
-      FOREIGN KEY (categoria_id) REFERENCES categorias(id)
-    )
-  `);
+// Crear tablas
+db.exec(`
+  CREATE TABLE IF NOT EXISTS categorias (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL,
+    descripcion TEXT
+  );
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS usuarios (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      nombre TEXT NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL,
-      fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+  CREATE TABLE IF NOT EXISTS productos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL,
+    precio REAL NOT NULL,
+    categoria_id INTEGER,
+    imagen TEXT,
+    especificaciones TEXT,
+    modelos_compatibles TEXT,
+    FOREIGN KEY (categoria_id) REFERENCES categorias(id)
+  );
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS pedidos (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      usuario_id INTEGER,
-      fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
-      total REAL NOT NULL,
-      estado TEXT DEFAULT 'pendiente',
-      FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
-    )
-  `);
+  CREATE TABLE IF NOT EXISTS usuarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS detalles_pedido (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      pedido_id INTEGER,
-      producto_id INTEGER,
-      cantidad INTEGER,
-      precio_unitario REAL,
-      FOREIGN KEY (pedido_id) REFERENCES pedidos(id),
-      FOREIGN KEY (producto_id) REFERENCES productos(id)
-    )
-  `);
+  CREATE TABLE IF NOT EXISTS pedidos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    usuario_id INTEGER,
+    fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+    total REAL NOT NULL,
+    estado TEXT DEFAULT 'pendiente',
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+  );
 
-  // Insertar categorías (usamos un flag para saber cuándo terminaron)
-  const categorias = [
-    { nombre: 'Transmisión', descripcion: 'Kits de arrastre, cadenas, piñones' },
-    { nombre: 'Frenos', descripcion: 'Pastillas, discos, bombas' },
-    { nombre: 'Mantenimiento', descripcion: 'Aceites, filtros, bujías' },
-    { nombre: 'Seguridad', descripcion: 'Cascos, guantes, chalecos' },
-    { nombre: 'Eléctrico', descripcion: 'Baterías, reguladores, luces' },
-    { nombre: 'Suspensión', descripcion: 'Amortiguadores, horquillas' },
-  ];
+  CREATE TABLE IF NOT EXISTS detalles_pedido (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pedido_id INTEGER,
+    producto_id INTEGER,
+    cantidad INTEGER,
+    precio_unitario REAL,
+    FOREIGN KEY (pedido_id) REFERENCES pedidos(id),
+    FOREIGN KEY (producto_id) REFERENCES productos(id)
+  );
+`);
 
-  let categoriasInsertadas = 0;
-  const categoriaMap = new Map(); // para guardar {nombre: id}
+// Insertar categorías
+const categorias = [
+  { nombre: 'Transmisión', descripcion: 'Kits de arrastre, cadenas, piñones' },
+  { nombre: 'Frenos', descripcion: 'Pastillas, discos, bombas' },
+  { nombre: 'Mantenimiento', descripcion: 'Aceites, filtros, bujías' },
+  { nombre: 'Seguridad', descripcion: 'Cascos, guantes, chalecos' },
+  { nombre: 'Eléctrico', descripcion: 'Baterías, reguladores, luces' },
+  { nombre: 'Suspensión', descripcion: 'Amortiguadores, horquillas' },
+];
 
-  const insertCategoria = db.prepare(`
-    INSERT INTO categorias (nombre, descripcion)
-    VALUES (?, ?)
-  `);
+const categoriaMap = new Map();
 
-  categorias.forEach(cat => {
-    insertCategoria.run(cat.nombre, cat.descripcion, function(err) {
-      if (err) throw err;
-      categoriaMap.set(cat.nombre, this.lastID);
-      categoriasInsertadas++;
-      if (categoriasInsertadas === categorias.length) {
-        // Todas las categorías insertadas, procedemos a insertar productos
-        insertarProductos();
-      }
-    });
-  });
-  insertCategoria.finalize();
+const insertCategoria = db.prepare(`
+  INSERT INTO categorias (nombre, descripcion)
+  VALUES (?, ?)
+`);
 
-  function insertarProductos() {
-    const productos = [
+categorias.forEach(cat => {
+  const result = insertCategoria.run(cat.nombre, cat.descripcion);
+  categoriaMap.set(cat.nombre, result.lastInsertRowid);
+});
+
+// Insertar productos
+const productos = [
   {
     "nombre": "Aceite motor 10W40",
     "precio": 45000,
@@ -305,35 +289,27 @@ db.serialize(() => {
   }
 ];
 
-    const insertProducto = db.prepare(`
-      INSERT INTO productos (nombre, precio, categoria_id, imagen, especificaciones, modelos_compatibles)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `);
+const insertProducto = db.prepare(`
+  INSERT INTO productos (nombre, precio, categoria_id, imagen, especificaciones, modelos_compatibles)
+  VALUES (?, ?, ?, ?, ?, ?)
+`);
 
-    let productosInsertados = 0;
-    productos.forEach(prod => {
-      const categoriaId = categoriaMap.get(prod.categoria);
-      if (!categoriaId) {
-        console.error(`Categoría '${prod.categoria}' no encontrada para producto '${prod.nombre}'`);
-        return;
-      }
-      insertProducto.run(
-        prod.nombre,
-        prod.precio,
-        categoriaId,
-        prod.imagen,
-        JSON.stringify(prod.especificaciones),
-        JSON.stringify(prod.modelosCompatibles),
-        function(err) {
-          if (err) throw err;
-          productosInsertados++;
-          if (productosInsertados === productos.length) {
-            console.log(`✅ Base de datos poblada con ${productosInsertados} productos.`);
-            db.close();
-          }
-        }
-      );
-    });
-    insertProducto.finalize();
+productos.forEach(prod => {
+  const categoriaId = categoriaMap.get(prod.categoria);
+  if (!categoriaId) {
+    console.error(`Categoría '${prod.categoria}' no encontrada para producto '${prod.nombre}'`);
+    return;
   }
+  insertProducto.run(
+    prod.nombre,
+    prod.precio,
+    categoriaId,
+    prod.imagen,
+    JSON.stringify(prod.especificaciones),
+    JSON.stringify(prod.modelosCompatibles)
+  );
 });
+
+console.log(`✅ Base de datos poblada con ${productos.length} productos.`);
+
+db.close();
