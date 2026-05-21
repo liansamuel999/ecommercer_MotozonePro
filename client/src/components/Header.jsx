@@ -115,6 +115,9 @@ function Header({ paginaActual, navegar, carrito, usuario, cerrarSesion, agregar
           <span onClick={() => navegar('productos')} style={{...styles.navLink, backgroundColor: paginaActual === 'productos' ? '#ff6b00' : 'transparent'}}>Productos</span>
           <span onClick={() => navegar('motos-en-vivo')} style={{...styles.navLink, backgroundColor: paginaActual === 'motos-en-vivo' ? '#ff6b00' : 'transparent'}}>Moto Modelos</span>
           <span onClick={() => navegar('contacto')} style={{...styles.navLink, backgroundColor: paginaActual === 'contacto' ? '#ff6b00' : 'transparent'}}>Contacto</span>
+          {usuario?.is_admin && (
+            <span onClick={() => navegar('admin')} style={{...styles.navLink, backgroundColor: paginaActual === 'admin' ? '#ff6b00' : 'transparent', color: '#ffed4e'}}> Admin</span>
+          )}
           <div 
             data-is-cart
             style={styles.carritoIcon} 

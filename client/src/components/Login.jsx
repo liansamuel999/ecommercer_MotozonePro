@@ -21,9 +21,9 @@ function Login({ iniciarSesion, navegar }) {
         body: JSON.stringify(formData)
       });
       const data = await response.json();
-      // Si el login es exitoso, guarda usuario y redirige al home
+      // Si el login es exitoso, guarda usuario y token, luego redirige al home
       if (data.success) {
-        iniciarSesion(data.user);
+        iniciarSesion(data.user, data.token);
         navegar('home');
       } else {
         setError(data.message || 'Error al iniciar sesión');

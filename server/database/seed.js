@@ -1,5 +1,6 @@
 const Database = require('better-sqlite3');
 const path = require('path');
+const bcrypt = require('bcryptjs');
 
 const dbPath = path.join(__dirname, 'motozone.db');
 const db = new Database(dbPath);
@@ -22,6 +23,7 @@ db.exec(`
     imagen TEXT,
     especificaciones TEXT,
     modelos_compatibles TEXT,
+    deleted_at DATETIME DEFAULT NULL,
     FOREIGN KEY (categoria_id) REFERENCES categorias(id)
   );
 
@@ -30,6 +32,7 @@ db.exec(`
     nombre TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
+    is_admin INTEGER DEFAULT 0,
     fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -261,5 +264,25 @@ productos.forEach(prod => {
 });
 
 console.log(`✅ Base de datos poblada con ${productos.length} productos.`);
+
+// Crear usuario administrador por defecto
+const adminEmail = 'admin@motozone.com';
+const adminPassword = 'admin123';
+
+const existingAdmin = db.prepare('SELECT id FROM usuarios WHERE email = ?').get(adminEmail);
+if (!existingAdmin) {
+  const hashedPassword = bcrypt.hashSync(adminPassword, 10);
+  db.prepare('INSERT INTO usuarios (nombre, email, password, is_admin) VALUES (?, ?, ?, ?)').run(
+    'Administrador',
+    adminEmail,
+    hashedPassword,
+    1
+  );
+  console.log(`✅ Usuario administrador creado: ${adminEmail}`);
+  console.log(`   Contraseña: ${adminPassword}`);
+  console.log('   ⚠️  Cambia la contraseña después del primer login');
+} else {
+  console.log(`✅ Usuario administrador ya existe: ${adminEmail}`);
+}
 
 db.close();

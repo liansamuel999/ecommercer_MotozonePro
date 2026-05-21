@@ -8,18 +8,34 @@ import Login from './components/Login';
 import Contacto from './components/Contacto';
 import Registro from './components/Registro';
 import MotosEnVivo from './components/MotosEnVivo';
+import AdminPanel from './components/AdminPanel';
 
 function App() {
 // Estados principales de la aplicación
 const [paginaActual, setPaginaActual] = useState('home'); // Controla qué página se muestra
 const [carrito, setCarrito] = useState([]); // Productos en el carrito
 const [usuario, setUsuario] = useState(null); // Usuario logueado
+const [token, setToken] = useState(null); // Token JWT para requests autenticadas
 const [productos, setProductos] = useState([]); // Lista de productos desde la API
 const [categorias, setCategorias] = useState(['Todos']); // Categorías para filtros
 const [modelos, setModelos] = useState(['Todas']); // Modelos de moto para filtros
 const [loading, setLoading] = useState(true); // Estado de carga
 
   useEffect(() => {
+    // Cargar usuario y token desde localStorage si existen
+    const usuarioGuardado = localStorage.getItem('usuario');
+    const tokenGuardado = localStorage.getItem('token');
+    if (usuarioGuardado) {
+      try {
+        setUsuario(JSON.parse(usuarioGuardado));
+        if (tokenGuardado) {
+          setToken(tokenGuardado);
+        }
+      } catch (err) {
+        console.error('Error cargando usuario:', err);
+      }
+    }
+
     const fetchData = async () => {
       try {
         // Cargar productos
@@ -30,7 +46,9 @@ const [loading, setLoading] = useState(true); // Estado de carga
         // Cargar categorías
         const catRes = await fetch('/api/categorias');
         const catData = await catRes.json();
-        setCategorias(['Todos', ...catData]);
+        // catData es array de {id, nombre}, extraemos solo nombres
+        const catNombres = catData.map(cat => cat.nombre);
+        setCategorias(['Todos', ...catNombres]);
 
         // Cargar modelos
         const modRes = await fetch('/api/modelos');
@@ -91,15 +109,19 @@ const agregarAlCarrito = (producto) => {
   };
 
   // Guarda datos del usuario en estado y localStorage
-  const iniciarSesion = (datos) => {
+  const iniciarSesion = (datos, tokenJWT) => {
     setUsuario(datos);
+    setToken(tokenJWT);
     localStorage.setItem('usuario', JSON.stringify(datos));
+    localStorage.setItem('token', tokenJWT);
   };
 
   // Elimina usuario del estado y localStorage
   const cerrarSesion = () => {
     setUsuario(null);
+    setToken(null);
     localStorage.removeItem('usuario');
+    localStorage.removeItem('token');
   };
 
   return (
@@ -138,6 +160,9 @@ const agregarAlCarrito = (producto) => {
         {paginaActual === 'registro' && <Registro navegar={navegar} />}
         {paginaActual === 'contacto' && <Contacto navegar={navegar} />}
         {paginaActual === 'motos-en-vivo' && <MotosEnVivo />}
+        {paginaActual === 'admin' && usuario?.is_admin && (
+          <AdminPanel usuario={usuario} navegar={navegar} token={token} />
+        )}
       </main>
       <Footer navegar={navegar} />
     </div>

@@ -57,13 +57,13 @@ router.post('/login', (req, res) => {
     }
 
     // Generar token JWT
-    const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: '24h' });
+    const token = jwt.sign({ id: user.id, email: user.email, is_admin: user.is_admin }, SECRET_KEY, { expiresIn: '24h' });
 
     res.json({
       success: true,
       message: 'Login exitoso',
       token,
-      user: { id: user.id, nombre: user.nombre, email: user.email }
+      user: { id: user.id, nombre: user.nombre, email: user.email, is_admin: user.is_admin }
     });
   } catch (error) {
     console.error('Error en login:', error);

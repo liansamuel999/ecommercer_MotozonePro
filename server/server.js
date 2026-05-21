@@ -8,7 +8,8 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors()); // Permite peticiones desde React
-app.use(express.json()); // Parsear JSON en body
+app.use(express.json({ limit: '50mb' })); // Parsear JSON en body con límite mayor para imágenes
+app.use(express.urlencoded({ limit: '50mb', extended: true })); // Para formularios grandes
 
 // Rutas
 app.use('/api/auth', require('./routes/auth'));
