@@ -11,6 +11,16 @@ app.use(cors()); // Permite peticiones desde React
 app.use(express.json({ limit: '50mb' })); // Parsear JSON en body con límite mayor para imágenes
 app.use(express.urlencoded({ limit: '50mb', extended: true })); // Para formularios grandes
 
+// Desactivar caché en desarrollo para que el preview siempre cargue la versión actual
+if (process.env.NODE_ENV !== 'production') {
+  app.use((req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    next();
+  });
+}
+
 // Rutas
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/productos', require('./routes/productos'));
