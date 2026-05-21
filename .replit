@@ -1,5 +1,5 @@
 run = "cd server && npm install && npm run build && npm run seed && npm start"
-modules = ["nodejs-20"]
+modules = ["nodejs-20", "python-3.11"]
 
 [workflows]
 runButton = "Project"
@@ -17,13 +17,13 @@ args = "Start application"
 name = "Start application"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd server && npm install && npm run build && npm run seed && npm start"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd server && node database/seed.js; node server.js"
+waitForPort = 5000
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -32,3 +32,11 @@ build = ["bash", "-c", "cd server && npm install && cd ../client && npm install 
 
 [agent]
 expertMode = true
+stack = "BEST_EFFORT_FALLBACK"
+
+[nix]
+channel = "stable-25_05"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
