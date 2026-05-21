@@ -177,7 +177,7 @@ function Productos({ productos, categorias, modelos, agregarAlCarrito }) {
           >
             <div style={styles.imageContainer}>
               <img 
-                src={`/${prod.imagen}`} 
+                src={prod.imagen?.startsWith('data:') ? prod.imagen : `/${prod.imagen}`}
                 alt={prod.nombre}
                 style={styles.image}
                 onError={(e) => console.error('Error cargando imagen:', e.target.src)}

@@ -51,7 +51,7 @@ function ComparadorModal({ productos, ids, onClose }) {
               <th></th>
               {productosAComparar.map(p => (
                 <th key={p.id} style={{ padding: '10px', borderBottom: '1px solid #ccc' }}>
-                  <img src={`/${p.imagen}`} alt={p.nombre} style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
+                  <img src={p.imagen?.startsWith('data:') ? p.imagen : `/${p.imagen}`} alt={p.nombre} style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
                   <div>{p.nombre}</div>
                   <div style={{ color: '#ff6b00' }}>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(p.precio)}</div>
                 </th>
